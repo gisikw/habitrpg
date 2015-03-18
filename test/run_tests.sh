@@ -11,9 +11,11 @@ grunt build:dev
 echo "= Recreating test database"
 mongo "$TEST_DB" --eval "db.dropDatabase()"
 
-./node_modules/protractor/bin/webdriver-manager update
-./node_modules/protractor/bin/webdriver-manager start > /dev/null &
-trap "curl http://localhost:4444/selenium-server/driver/?cmd=shutDownSeleniumServer" EXIT
+if [ -z "$TRAVIS" ]; then
+  ./node_modules/protractor/bin/webdriver-manager update
+  ./node_modules/protractor/bin/webdriver-manager start > /dev/null &
+  trap "curl http://localhost:4444/selenium-server/driver/?cmd=shutDownSeleniumServer" EXIT
+fi
 
 # Wait for selenium
 MAX_WAIT=30
