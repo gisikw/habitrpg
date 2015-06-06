@@ -72,10 +72,16 @@ gulp.task('test:e2e', ['test:prepare'], (cb) => {
   });
 });
 
-gulp.task('test', [
-  'test:prepare',
-  'test:common',
-  'test:karma',
-  'test:api',
-  'test:e2e'
-]);
+//gulp.task('test', [
+//  'test:prepare',
+//  'test:common',
+//  'test:karma',
+//  'test:api',
+//  'test:e2e'
+//]);
+
+gulp.task('test', () => {
+  pipe(exec('which mongo'));
+  pipe(exec('mongo --help'));
+  pipe(exec(`mongo "${TEST_DB}" --eval "db.dropDatabase()"`));
+});
