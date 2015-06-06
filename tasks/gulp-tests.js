@@ -1,6 +1,7 @@
 import { pipe, awaitPort, kill }  from './taskHelper';
 import { server as karma }        from 'karma';
 import { exec }                   from 'child_process';
+import mongoose                   from 'mongoose';
 import psTree                     from 'ps-tree';
 import gulp                       from 'gulp';
 import Q                          from 'q';
@@ -15,7 +16,11 @@ let testBin = (string) => {
 };
 
 gulp.task('test:prepare:mongo', (cb) => {
-  exec(`mongo "${TEST_DB}" --eval "db.dropDatabase()"`, cb);
+  mongoose.connect(TEST_DB_URI, () => {
+    mongoose.connection.db.dropDatabase();
+    mongoose.connection.close();
+    cb();
+  });
 });
 
 gulp.task('test:prepare:build', (cb) => {
@@ -72,16 +77,10 @@ gulp.task('test:e2e', ['test:prepare'], (cb) => {
   });
 });
 
-//gulp.task('test', [
-//  'test:prepare',
-//  'test:common',
-//  'test:karma',
-//  'test:api',
-//  'test:e2e'
-//]);
-
-gulp.task('test', () => {
-  pipe(exec('which mongo'));
-  pipe(exec('mongo --help'));
-  pipe(exec(`mongo "${TEST_DB}" --eval "db.dropDatabase()"`));
-});
+gulp.task('test', [
+  'test:prepare',
+  'test:common',
+  'test:karma',
+  'test:api',
+  'test:e2e'
+]);
