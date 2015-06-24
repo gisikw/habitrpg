@@ -6,7 +6,7 @@ var Task = require('./task').model;
 function taskHelpers (schema, modelName) {
 
   modelName!=='User' && schema.virtual('tasks').get(function(){
-    return _.reduce(this.habits.concat(this.dailys).concat(this.todos).concat(this.rewards), function(m,v,k){
+    return _.reduce(this.habits.concat(this.dailys, this.todos, this.rewards), function(m,v,k){
       if (v) m[v._id] = v;
       return m;
     }, {});
@@ -41,7 +41,10 @@ function taskHelpers (schema, modelName) {
           var type = task.type+'s';
           if (!self[type]) self[type] = [];
           self[type].push(task);
-        })
+        });
+        _.each('habits dailys todos rewards'.split(' '), function(category) {
+          self[category] = self[category] || [];
+        });
         cb2(null, self);
       }
     ], cb);
@@ -54,7 +57,7 @@ function taskHelpers (schema, modelName) {
 
     var self = this;
 
-    _.each( self.habits.concat(self.todos).concat(self.dailys).concat(self.rewards) , function(v){
+    _.each( self.habits.concat(self.todos, self.dailys, self.rewards) , function(v){
       if (!v) return;
       if (v.isModified && v.isModified()) {
         v.save();

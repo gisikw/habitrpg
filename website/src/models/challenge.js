@@ -86,6 +86,8 @@ ChallengeSchema.methods.updateAttrs = function(attrs, cb) {
 
   //TODO stream
   User.find({_id:{$in:self.members}}).select('challenges tags').exec(function(user){
+    if (!user) return;
+
     // Add challenge to user.challenges
     if (!_.contains(user.challenges, self._id)) {
       user.challenges.push(self._id);
