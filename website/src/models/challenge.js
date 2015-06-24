@@ -50,7 +50,7 @@ ChallengeSchema.methods.updateAttrs = function(attrs, cb) {
 
   // sync tasks
 
-  _.each(this.tasks, function(task){
+  _.each(this.habits.concat(this.dailys, this.todos, this.rewards), function(task){
     var found = _.find(attrs[task.type+'s'], {_id:task._id});
 
     // deletion
@@ -72,7 +72,8 @@ ChallengeSchema.methods.updateAttrs = function(attrs, cb) {
 
     }
   });
-  _.each(attrs.habits.concat(attrs.dailys).concat(attrs.todos).concat(attrs.rewards), function(task){
+
+  _.each(self.habits.concat(self.dailys, self.todos, self.rewards), function(task){
     if (!_.find(this[task.type+'s'],{_id:task._id})) {
       //addition
       _.each(self.members, function(uid){
@@ -85,31 +86,31 @@ ChallengeSchema.methods.updateAttrs = function(attrs, cb) {
   // Save user attrs
 
   //TODO stream
-  User.find({_id:{$in:self.members}}).select('challenges tags').exec(function(user){
-    if (!user) return;
-
-    // Add challenge to user.challenges
-    if (!_.contains(user.challenges, self._id)) {
-      user.challenges.push(self._id);
-    }
-
-    // Sync tags
-    var tags = user.tags || [];
-    var i = _.findIndex(tags, {id: self._id})
-    if (~i) {
-      if (tags[i].name !== self.shortName) {
-        // update the name - it's been changed since
-        user.tags[i].name = self.shortName;
+  User.find({_id:{$in:self.members}}).select('challenges tags').exec(function(err, users){
+    _.each(users, function(user) {
+      // Add challenge to user.challenges
+      if (!_.contains(user.challenges, self._id)) {
+        user.challenges.push(self._id);
       }
-    } else {
-      user.tags.push({
-        id: self._id,
-        name: self.shortName,
-        challenge: true
-      });
-    }
 
-    user.save();
+      // Sync tags
+      var tags = user.tags;
+      var i = _.findIndex(tags, {id: self._id})
+      if (~i) {
+        if (tags[i].name !== self.shortName) {
+          // update the name - it's been changed since
+          user.tags[i].name = self.shortName;
+        }
+      } else {
+        user.tags.push({
+          id: self._id,
+          name: self.shortName,
+          challenge: true
+        });
+      }
+
+      user.save();
+    });
   })
 };
 
