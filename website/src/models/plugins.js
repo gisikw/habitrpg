@@ -49,6 +49,9 @@ function taskHelpers (schema, modelName) {
 
 
   schema.methods.validateTasks = function(){
+    // Don't validate tasks if the record hasn't been loaded with them.
+    if(!this.habits) return;
+
     var self = this;
 
     _.each( self.habits.concat(self.todos).concat(self.dailys).concat(self.rewards) , function(v){
