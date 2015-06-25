@@ -138,6 +138,13 @@ api.get = function(req, res, next) {
       ]});
   populateQuery(gid, q);
   q.exec(function(err, group){
+
+    // FIXME:
+    // For some reason, the member limit isn't being respected. This is a
+    // critical issue and needs to be addressed, because it likely means that
+    // ALL matching users are being loaded into memory.
+    group.members.splice(15, group.members.length);
+
     if (err) return next(err);
     if(!group){
       if(gid !== 'party') return res.json(404,{err: "Group not found or you don't have access."});
